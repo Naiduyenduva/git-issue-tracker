@@ -15,8 +15,9 @@ datasource db {
 
 model User {
   id            String @id @default(uuid())
+  username      String
   email         String @unique
-  GitUserId     String @unique
+  password      String
   repositories  Repository[]
 }
 
@@ -31,7 +32,7 @@ model Repository {
 
 model Issue {
   id            String   @id @default(uuid())
-  issueId       Int      @unique // GitHub issue ID
+  issueId       BigInt   @unique // GitHub issue ID
   title         String
   createdAt     DateTime @default(now())
   repository    Repository @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
