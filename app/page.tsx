@@ -1,7 +1,8 @@
 import Link from "next/link"
 import Image from "next/image"
-// import { button } from "@/components/ui/button"
-// import { Input } from "@/components/ui/input"
+import issues from "./assets/issues.png"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import { Github, CheckCircle, BarChart3, Clock, Users, MessageSquare } from "lucide-react"
 
 export default function LandingPage() {
@@ -31,7 +32,7 @@ export default function LandingPage() {
             <Link href="/login" className="text-sm font-medium transition-colors hover:text-primary">
               Log in
             </Link>
-            <button>Sign Up Free</button>
+            <Button>Sign Up Free</Button>
           </div>
         </div>
       </header>
@@ -51,16 +52,16 @@ export default function LandingPage() {
                   </p>
                 </div>
                 <div className="flex flex-col gap-2 min-[400px]:flex-row">
-                  <button >Get Started Free</button>
-                  <button>
+                  <Button size="lg">Get Started Free</Button>
+                  <Button size="lg" variant="outline">
                     Book a Demo
-                  </button>
+                  </Button>
                 </div>
               </div>
               <div className="flex items-center justify-center">
                 <Image
-                  src="/https://ibb.co/Zz09mWk9"
-                  width={300}
+                  src={issues}
+                  width={550}
                   height={550}
                   alt="Dashboard Preview"
                   className="rounded-lg border shadow-lg"
@@ -161,7 +162,7 @@ export default function LandingPage() {
             <div className="mx-auto grid max-w-5xl items-center gap-6 py-12 lg:grid-cols-2">
               <Image
                 src="/placeholder.svg?height=400&width=500"
-                width={300}
+                width={500}
                 height={400}
                 alt="Product screenshot"
                 className="mx-auto rounded-xl shadow-lg"
@@ -254,7 +255,7 @@ export default function LandingPage() {
                     <span>Email support</span>
                   </li>
                 </ul>
-                <button className="mt-6">Start Free Trial</button>
+                <Button className="mt-6">Start Free Trial</Button>
               </div>
               <div className="flex flex-col rounded-lg border bg-background p-6 shadow-sm relative">
                 <div className="absolute -top-4 left-0 right-0 mx-auto w-fit rounded-full bg-primary px-3 py-1 text-xs font-medium text-primary-foreground">
@@ -286,7 +287,7 @@ export default function LandingPage() {
                     <span>Priority support</span>
                   </li>
                 </ul>
-                <button className="mt-6">Start Free Trial</button>
+                <Button className="mt-6">Start Free Trial</Button>
               </div>
               <div className="flex flex-col rounded-lg border bg-background p-6 shadow-sm">
                 <div className="space-y-2">
@@ -315,7 +316,7 @@ export default function LandingPage() {
                     <span>Dedicated account manager</span>
                   </li>
                 </ul>
-                <button className="mt-6">Contact Sales</button>
+                <Button className="mt-6">Contact Sales</Button>
               </div>
             </div>
           </div>
@@ -394,14 +395,16 @@ export default function LandingPage() {
                 </p>
               </div>
               <div className="flex flex-col gap-2 min-[400px]:flex-row">
-                <button>
+                <Button size="lg" variant="secondary">
                   Start Your Free Trial
-                </button>
-                <button
-                  className="bg-transparent text-primary-foreground border-primary-foreground hover:bg-primary-foreground/10"
+                </Button>
+                <Button
+                size="lg"
+                variant="outline"
+                className="bg-transparent text-primary-foreground border-primary-foreground hover:bg-primary-foreground/10"
                 >
                   Schedule a Demo
-                </button>
+                </Button>
               </div>
             </div>
           </div>
@@ -420,8 +423,8 @@ export default function LandingPage() {
             </div>
             <div className="mx-auto w-full max-w-sm space-y-2">
               <form className="flex flex-col gap-2 sm:flex-row">
-                <input type="email" placeholder="Enter your email" className="max-w-lg flex-1" />
-                <button type="submit">Subscribe</button>
+                <Input type="email" placeholder="Enter your email" className="max-w-lg flex-1" />
+                <Button type="submit">Subscribe</Button>
               </form>
               <p className="text-xs text-muted-foreground">We respect your privacy. Unsubscribe at any time.</p>
             </div>
