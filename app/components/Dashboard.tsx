@@ -1,12 +1,11 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
   AlertCircle,
@@ -20,7 +19,6 @@ import {
   Plus,
   Search,
   Settings,
-  Star,
   User,
 } from "lucide-react"
 import {
@@ -35,181 +33,65 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { addRepository } from "../api/repository"
+import { fetchRepository } from "../api/issues"
 
-// Mock data for repositories
-const initialRepos = [
-  {
-    id: 1,
-    name: "react",
-    fullName: "facebook/react",
-    description: "A declarative, efficient, and flexible JavaScript library for building user interfaces.",
-    url: "https://github.com/facebook/react",
-    stars: 203000,
-    openIssues: 1200,
-    language: "JavaScript",
-  },
-  {
-    id: 2,
-    name: "next.js",
-    fullName: "vercel/next.js",
-    description: "The React Framework for Production",
-    url: "https://github.com/vercel/next.js",
-    stars: 105000,
-    openIssues: 1500,
-    language: "TypeScript",
-  },
-]
-
-// Mock data for issues
-const mockIssues = [
-  {
-    id: 1,
-    title: "Bug in component rendering",
-    number: 1234,
-    state: "open",
-    createdAt: "2023-06-15T10:30:00Z",
-    updatedAt: "2023-06-16T14:20:00Z",
-    author: {
-      login: "user1",
-      avatarUrl: "https://github.com/ghost.png",
-    },
-    labels: [
-      { id: 1, name: "bug", color: "d73a4a" },
-      { id: 2, name: "priority: high", color: "b60205" },
-    ],
-    comments: 5,
-    assignees: [
-      { login: "dev1", avatarUrl: "https://github.com/ghost.png" },
-      { login: "dev2", avatarUrl: "https://github.com/ghost.png" },
-    ],
-  },
-  {
-    id: 2,
-    title: "Feature request: Add dark mode support",
-    number: 1235,
-    state: "open",
-    createdAt: "2023-06-14T08:15:00Z",
-    updatedAt: "2023-06-15T11:45:00Z",
-    author: {
-      login: "user2",
-      avatarUrl: "https://github.com/ghost.png",
-    },
-    labels: [
-      { id: 3, name: "enhancement", color: "a2eeef" },
-      { id: 4, name: "good first issue", color: "7057ff" },
-    ],
-    comments: 3,
-    assignees: [],
-  },
-  {
-    id: 3,
-    title: "Documentation needs update for new API",
-    number: 1236,
-    state: "closed",
-    createdAt: "2023-06-10T15:20:00Z",
-    updatedAt: "2023-06-12T09:30:00Z",
-    author: {
-      login: "user3",
-      avatarUrl: "https://github.com/ghost.png",
-    },
-    labels: [{ id: 5, name: "documentation", color: "0075ca" }],
-    comments: 2,
-    assignees: [{ login: "dev3", avatarUrl: "https://github.com/ghost.png" }],
-  },
-  {
-    id: 4,
-    title: "Performance optimization for large datasets",
-    number: 1237,
-    state: "open",
-    createdAt: "2023-06-08T11:10:00Z",
-    updatedAt: "2023-06-14T16:40:00Z",
-    author: {
-      login: "user4",
-      avatarUrl: "https://github.com/ghost.png",
-    },
-    labels: [{ id: 6, name: "performance", color: "0e8a16" }],
-    comments: 8,
-    assignees: [
-      { login: "dev1", avatarUrl: "https://github.com/ghost.png" },
-      { login: "dev4", avatarUrl: "https://github.com/ghost.png" },
-    ],
-  },
-  {
-    id: 5,
-    title: "Update dependencies to latest versions",
-    number: 1238,
-    state: "open",
-    createdAt: "2023-06-05T09:25:00Z",
-    updatedAt: "2023-06-07T13:15:00Z",
-    author: {
-      login: "user5",
-      avatarUrl: "https://github.com/ghost.png",
-    },
-    labels: [{ id: 7, name: "dependencies", color: "0366d6" }],
-    comments: 1,
-    assignees: [],
-  },
-]
+interface issuetype {
+  number: number;
+  title: string;
+  state: string
+}
 
 export default function Dashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(true)
-  const [repositories, setRepositories] = useState(initialRepos)
-  const [selectedRepo, setSelectedRepo] = useState(repositories[0])
-  const [issues, setIssues] = useState(mockIssues)
-  const [newRepoUrl, setNewRepoUrl] = useState("")
+  const [repositories, setRepositories] = useState<{ id: string; owner: string; name: string; issues: issuetype[] }[] | { error: string }>([])
   const [isAddingRepo, setIsAddingRepo] = useState(false)
-  const [issueFilter, setIssueFilter] = useState("all")
+  const [issues, setIssues] = useState<issuetype[]>([]);
 
-  // Function to handle adding a new repository
-  const handleAddRepository = () => {
-    // Extract repo information from URL
-    // In a real app, this would make an API call to GitHub
-    const urlParts = newRepoUrl.replace("https://github.com/", "").split("/")
-    if (urlParts.length >= 2) {
-      const owner = urlParts[0]
-      const repo = urlParts[1]
-      const fullName = `${owner}/${repo}`
+  const [repoUrl, setRepoUrl] = useState("");
+  const [message, setMessage] = useState("");
+  const userId = "4712a51a-12a2-4fa5-951d-3e35b3b177c5"
 
-      // Check if repo already exists
-      if (repositories.some((r) => r.fullName === fullName)) {
-        alert("This repository is already added.")
-        return
-      }
+  async function handleSubmit (formData: FormData) {
+    const response = await addRepository(formData);
 
-      // Add new repository
-      const newRepo = {
-        id: repositories.length + 1,
-        name: repo,
-        fullName: fullName,
-        description: `Repository for ${fullName}`,
-        url: newRepoUrl,
-        stars: Math.floor(Math.random() * 1000),
-        openIssues: Math.floor(Math.random() * 100),
-        language: ["JavaScript", "TypeScript", "Python", "Go", "Rust"][Math.floor(Math.random() * 5)],
-      }
-
-      setRepositories([...repositories, newRepo])
-      setNewRepoUrl("")
-      setIsAddingRepo(false)
+    if(response.error) {
+        setMessage(response.error)
+        console.log(message)
     } else {
-      alert("Please enter a valid GitHub repository URL (e.g., https://github.com/owner/repo)")
+        setMessage(response.success as string);
+        setIsAddingRepo(false);
+        setRepoUrl("")
+        fetchIssues();
     }
   }
 
-  // Filter issues based on selected filter
-  const filteredIssues = issues.filter((issue) => {
-    if (issueFilter === "all") return true
-    if (issueFilter === "open") return issue.state === "open"
-    if (issueFilter === "closed") return issue.state === "closed"
-    return true
-  })
+  async function fetchIssues() {
+    const response = await fetchRepository();
+    console.log(response)
+    if ("error" in response) {
+      console.log(response.error);
+      return;
+    }
+    setRepositories(response);
+  }
+
+  useEffect(()=> {
+    fetchIssues()
+  },[])
+
+  useEffect(() => {
+    if (Array.isArray(repositories) && repositories.length > 0) {
+      const allIssues = repositories.flatMap((repo) => repo.issues); // Merge issues from all repos
+      setIssues(allIssues)
+    }
+  }, [repositories]);
+  
 
   return (
     <div className="flex min-h-screen bg-background">
@@ -322,7 +204,7 @@ export default function Dashboard() {
             <h2 className="text-2xl font-bold">GitHub Repositories</h2>
             <Dialog open={isAddingRepo} onOpenChange={setIsAddingRepo}>
               <DialogTrigger asChild>
-                <Button>
+                <Button className="cursor-pointer">
                   <Plus className="mr-2 h-4 w-4" />
                   Add Repository
                 </Button>
@@ -334,152 +216,124 @@ export default function Dashboard() {
                 </DialogHeader>
                 <div className="grid gap-4 py-4">
                   <div className="grid gap-2">
-                    <Input
-                      id="repo-url"
-                      placeholder="https://github.com/owner/repo"
-                      value={newRepoUrl}
-                      onChange={(e) => setNewRepoUrl(e.target.value)}
-                    />
-                  </div>
-                </div>
-                <DialogFooter>
-                  <Button variant="outline" onClick={() => setIsAddingRepo(false)}>
+                <form action={handleSubmit} className="flex flex-col gap-3">
+                  <Input
+                      type="text"
+                      name="repoUrl"
+                      placeholder="Enter GitHub repo URL"
+                      value={repoUrl}
+                      onChange={(e) => setRepoUrl(e.target.value)}
+                      required
+                      className="outline-none"
+                  />
+                  <Button variant="outline" className="cursor-pointer" onClick={() => setIsAddingRepo(false)}>
                     Cancel
                   </Button>
-                  <Button onClick={handleAddRepository}>Add Repository</Button>
-                </DialogFooter>
+                  <Input type="hidden" name="userId" value={userId} /> {/* Hidden userId field */}
+                  <Button type="submit" className="cursor-pointer">Add Repository</Button>
+                </form>
+                  </div>
+                </div>
               </DialogContent>
             </Dialog>
           </div>
 
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mb-8">
-            {repositories.map((repo) => (
+            { Array.isArray(repositories) ? (
+            repositories.map((repo) => (
               <Card
                 key={repo.id}
-                className={`cursor-pointer hover:border-primary transition-colors ${selectedRepo?.id === repo.id ? "border-primary" : ""}`}
-                onClick={() => setSelectedRepo(repo)}
+                className={`cursor-pointer hover:border-primary transition-colors`}
+                
               >
                 <CardHeader className="pb-2">
                   <CardTitle className="flex items-center">
                     <Github className="mr-2 h-5 w-5" />
                     {repo.name}
                   </CardTitle>
-                  <CardDescription>{repo.fullName}</CardDescription>
+                  <CardDescription>{repo.owner}/{repo.name}</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-sm text-muted-foreground mb-4">{repo.description}</p>
                   <div className="flex items-center justify-between text-sm">
                     <div className="flex items-center">
-                      <Star className="mr-1 h-4 w-4 text-yellow-500" />
-                      <span>{repo.stars.toLocaleString()}</span>
-                    </div>
-                    <div className="flex items-center">
                       <AlertCircle className="mr-1 h-4 w-4 text-red-500" />
-                      <span>{repo.openIssues} issues</span>
+                      <span>{repo.issues.length} issues</span>
                     </div>
-                    <Badge variant="outline">{repo.language}</Badge>
                   </div>
                 </CardContent>
                 <CardFooter className="pt-1">
                   <Button variant="ghost" size="sm" className="w-full" asChild>
-                    <Link href={repo.url} target="_blank">
+                    <Link href={`https://github.com/${repo.owner}/${repo.name}`} target="_blank">
                       View on GitHub
                     </Link>
                   </Button>
                 </CardFooter>
               </Card>
-            ))}
+            ))
+            ) : (<p>Hello this is error</p>)
+          }
           </div>
+        </main>  
+      <Tabs defaultValue="list" className="mb-8">
+        <TabsList>
+          <TabsTrigger value="list">List View</TabsTrigger>
+        </TabsList>
+        <TabsContent value="list">
+          <Card>
+            <CardContent className="p-0">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-[50px]">Status</TableHead>
+                    <TableHead>Title</TableHead>
+                    <TableHead>Repository</TableHead>
+                    <TableHead className="text-right">Number</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {Array.isArray(repositories) &&
+                    repositories.flatMap((repo) =>
+                      repo.issues.map((issue) => (
+                        <TableRow key={issue.number}>
+                          <TableCell>
+                            {issue.state === "open" ? (
+                              <AlertCircle className="h-5 w-5 text-red-500" />
+                            ) : (
+                              <CheckCircle className="h-5 w-5 text-green-500" />
+                            )}
+                          </TableCell>
+                          <TableCell className="font-medium">
+                            <span>{issue.title}</span>
+                          </TableCell>
+                          <TableCell className="font-medium text-muted-foreground">
+                            <span>{repo.owner}/{repo.name}</span>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <span className="text-xs text-muted-foreground">
+                              #{issue.number}
+                            </span>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
 
-          {selectedRepo && (
-            <>
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold">Issues for {selectedRepo.fullName}</h2>
-                <div className="flex items-center space-x-2">
-                  <Select value={issueFilter} onValueChange={setIssueFilter}>
-                    <SelectTrigger className="w-[180px]">
-                      <SelectValue placeholder="Filter issues" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Issues</SelectItem>
-                      <SelectItem value="open">Open Issues</SelectItem>
-                      <SelectItem value="closed">Closed Issues</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <Tabs defaultValue="list" className="mb-8">
-                <TabsList>
-                  <TabsTrigger value="list">List View</TabsTrigger>
-                </TabsList>
-                <TabsContent value="list">
-                  <Card>
-                    <CardContent className="p-0">
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead className="w-[50px]">Status</TableHead>
-                            <TableHead>Title</TableHead>
-                            <TableHead>Labels</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {filteredIssues.map((issue) => (
-                            <TableRow key={issue.id}>
-                              <TableCell>
-                                {issue.state === "open" ? (
-                                  <AlertCircle className="h-5 w-5 text-red-500" />
-                                ) : (
-                                  <CheckCircle className="h-5 w-5 text-green-500" />
-                                )}
-                              </TableCell>
-                              <TableCell className="font-medium">
-                                <div className="flex flex-col">
-                                  <span>{issue.title}</span>
-                                  <span className="text-xs text-muted-foreground">
-                                    #{issue.number} opened by {issue.author.login}
-                                  </span>
-                                </div>
-                              </TableCell>
-                              <TableCell>
-                                <div className="flex flex-wrap gap-1">
-                                  {issue.labels.map((label) => (
-                                    <Badge
-                                      key={label.id}
-                                      style={{
-                                        backgroundColor: `#${label.color}`,
-                                        color: Number.parseInt(label.color, 16) > 0xffffff / 2 ? "#000" : "#fff",
-                                      }}
-                                      className="text-xs"
-                                    >
-                                      {label.name}
-                                    </Badge>
-                                  ))}
-                                </div>
-                              </TableCell>
-                            </TableRow>
-                          ))}
-                          {filteredIssues.length === 0 && (
-                            <TableRow>
-                              <TableCell colSpan={6} className="text-center py-8">
-                                <div className="flex flex-col items-center justify-center text-muted-foreground">
-                                  <AlertCircle className="h-8 w-8 mb-2" />
-                                  <p>No issues found</p>
-                                </div>
-                              </TableCell>
-                            </TableRow>
-                          )}
-                        </TableBody>
-                      </Table>
-                    </CardContent>
-                  </Card>
-                </TabsContent>
-              </Tabs>
-            </>
-          )}
-        </main>
-      </div>
+                  {issues.length === 0 && (
+                    <TableRow>
+                      <TableCell colSpan={4} className="text-center py-8">
+                        <div className="flex flex-col items-center justify-center text-muted-foreground">
+                          <AlertCircle className="h-8 w-8 mb-2" />
+                          <p>No issues found</p>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+    </div>
     </div>
   )
 }
