@@ -34,6 +34,8 @@ model Issue {
   id            String   @id @default(uuid())
   issueId       BigInt   @unique // GitHub issue ID
   title         String
+  state         String
+  number        Int
   createdAt     DateTime @default(now())
   repository    Repository @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
   repositoryId  String

@@ -39,23 +39,27 @@ import {
 } from "@/components/ui/dialog"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { addRepository } from "../api/repository"
-import { fetchRepository } from "../api/issues"
+import { fetchRepositories } from "../api/issues"
+import { fetchAllIssues } from "../api/issues"
 
-interface issuetype {
-  number: number;
+type issuetype = {
+  id: string;
   title: string;
-  state: string
-}
+  createdAt: Date;
+  repository: { id: string; name: string; owner: string };
+  number?: number; // Mark as optional
+  state?: string; // Mark as optional
+};
 
 export default function Dashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(true)
-  const [repositories, setRepositories] = useState<{ id: string; owner: string; name: string; issues: issuetype[] }[] | { error: string }>([])
+  const [repositories, setRepositories] = useState<{ id: string; owner: string; name: string; userId:string;}[] | { error: string }>([])
   const [isAddingRepo, setIsAddingRepo] = useState(false)
   const [issues, setIssues] = useState<issuetype[]>([]);
 
   const [repoUrl, setRepoUrl] = useState("");
   const [message, setMessage] = useState("");
-  const userId = "4712a51a-12a2-4fa5-951d-3e35b3b177c5"
+  const userId = process.env.USERID;
 
   async function handleSubmit (formData: FormData) {
     const response = await addRepository(formData);
@@ -71,8 +75,8 @@ export default function Dashboard() {
     }
   }
 
-  async function fetchIssues() {
-    const response = await fetchRepository();
+  async function fetchRepos() {
+    const response = await fetchRepositories();
     console.log(response)
     if ("error" in response) {
       console.log(response.error);
@@ -81,16 +85,21 @@ export default function Dashboard() {
     setRepositories(response);
   }
 
-  useEffect(()=> {
-    fetchIssues()
-  },[])
-
-  useEffect(() => {
-    if (Array.isArray(repositories) && repositories.length > 0) {
-      const allIssues = repositories.flatMap((repo) => repo.issues); // Merge issues from all repos
-      setIssues(allIssues)
+  async function fetchIssues() {
+    const response = await fetchAllIssues(); // ✅ Fetch all issues from DB
+    console.log(response);
+    
+    if ("error" in response) {
+      console.log(response.error);
+      return;
     }
-  }, [repositories]);
+    setIssues(response); // ✅ Set issues instead of repositories
+}
+
+  useEffect(()=> {
+    fetchIssues();
+    fetchRepos();
+  },[])
   
 
   return (
@@ -257,7 +266,7 @@ export default function Dashboard() {
                   <div className="flex items-center justify-between text-sm">
                     <div className="flex items-center">
                       <AlertCircle className="mr-1 h-4 w-4 text-red-500" />
-                      <span>{repo.issues.length} issues</span>
+                      <span>{issues.length} issues</span>
                     </div>
                   </div>
                 </CardContent>
@@ -273,8 +282,9 @@ export default function Dashboard() {
             ) : (<p>Hello this is error</p>)
           }
           </div>
-        </main>  
-      <Tabs defaultValue="list" className="mb-8">
+        </main>
+        <h2 className="text-2xl font-bold pl-5 pb-5">Recent 5 issues of Repositories</h2>
+        <Tabs defaultValue="list" className="mb-8 px-5">
         <TabsList>
           <TabsTrigger value="list">List View</TabsTrigger>
         </TabsList>
@@ -291,10 +301,8 @@ export default function Dashboard() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {Array.isArray(repositories) &&
-                    repositories.flatMap((repo) =>
-                      repo.issues.map((issue) => (
-                        <TableRow key={issue.number}>
+                  { issues.map((issue) => (
+                        <TableRow key={issue.id}>
                           <TableCell>
                             {issue.state === "open" ? (
                               <AlertCircle className="h-5 w-5 text-red-500" />
@@ -303,10 +311,10 @@ export default function Dashboard() {
                             )}
                           </TableCell>
                           <TableCell className="font-medium">
-                            <span>{issue.title}</span>
+                            <span>{issue.title.length > 50 ? issue.title.slice(0, 50) + "..." : issue.title}</span>
                           </TableCell>
                           <TableCell className="font-medium text-muted-foreground">
-                            <span>{repo.owner}/{repo.name}</span>
+                            <span>{issue.repository.owner}/{issue.repository.name}</span>
                           </TableCell>
                           <TableCell className="text-right">
                             <span className="text-xs text-muted-foreground">
@@ -314,9 +322,7 @@ export default function Dashboard() {
                             </span>
                           </TableCell>
                         </TableRow>
-                      ))
-                    )}
-
+                      ))}              
                   {issues.length === 0 && (
                     <TableRow>
                       <TableCell colSpan={4} className="text-center py-8">

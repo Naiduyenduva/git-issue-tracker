@@ -27,6 +27,8 @@ export async function checkForNewIssues() {
             data: {
               issueId: issue.id,
               title: issue.title,
+              number:issue.number,
+              state: issue.state,
               repositoryId: id,
             },
           });
@@ -42,46 +44,39 @@ export async function checkForNewIssues() {
   return { success: "Issues checked successfully!" };
 }
 
-export async function fetchRepository() {
+export async function fetchRepositories() {
   try {
-    const repos = await prisma.repository.findMany();
-    const repoIssues = [];
-    const GITHUB_TOKEN = process.env.GITHUB_TOKEN; // Store in environment variable
-
-
-    for (const repo of repos) {
-      const { owner, name, id } = repo;
-      const apiUrl = `https://api.github.com/repos/${owner}/${name}/issues?per_page=5&sort=created&direction=desc`;
-
-      try {
-        const response = await axios.get(apiUrl, {
-          headers: { "User-Agent": "Git-Issue-Tracker" ,
-          Authorization: `token ${GITHUB_TOKEN}`,} // ✅ Use GitHub Token
-        });
-
-        // Push repo info along with its issues
-        repoIssues.push({
-          id,
-          owner,
-          name,
-          issues: response.data, // Issues from GitHub API
-        });
-
-      } catch (error) {
-        console.error(`Error fetching issues for ${owner}/${name}:`, error);
-        repoIssues.push({
-          id,
-          owner,
-          name,
-          issues: [], // Return empty issues on error
-        });
-      }
-    }
-
-    return repoIssues; // Return structured data
-
+    const repositories = await prisma.repository.findMany();
+    return repositories;
   } catch (error) {
     console.error("Error fetching repositories:", error);
     return { error: "Failed to fetch repositories" };
+  }
+}
+
+export async function fetchAllIssues() {
+  try {
+    const issues = await prisma.issue.findMany({
+      select: {
+        id: true,
+        title: true,
+        state:true,
+        number:true,
+        createdAt: true,
+        repository: {
+          select: {
+            id: true,
+            name: true,
+            owner: true,
+          },
+        },
+      },
+      orderBy: { createdAt: "desc" }, // Fetch latest issues first
+    });
+
+    return issues;
+  } catch (error) {
+    console.error("Error fetching all issues:", error);
+    return { error: "Failed to fetch issues from database" };
   }
 }
