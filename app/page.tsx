@@ -1,5 +1,5 @@
 import React from 'react';
-import { Github, Mail, Bell, Shield, Zap, CheckCircle, Star, Code, GitPullRequest } from 'lucide-react';
+import { Github, Mail, Bell, Shield, Zap, Star, Code, GitPullRequest } from 'lucide-react';
 import Link from 'next/link';
 
 function App() {
@@ -171,7 +171,7 @@ function App() {
               Join thousands of developers who use IssueWatch to stay updated and contribute effectively to their favorite projects.
             </p>
             <button className="bg-white text-blue-600 px-8 py-4 rounded-lg hover:bg-blue-50 transition-colors font-medium">
-              Get Started - It's Free
+              Get Started - It&apos;s Free
             </button>
           </div>
         </div>

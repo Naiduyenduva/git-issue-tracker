@@ -1,21 +1,33 @@
 "use client"
 
 import { useState } from "react";
+import { signIn } from "next-auth/react";
+import { toast } from "sonner"
 
 export default function Login() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [message, setMessage] = useState("");
+    const [loading, setLoading] = useState(false);
 
-    async function handleSubmit(formData: FormData) {
-        try {
-            console.log('Login attempt:', {
-                email: formData.get('email'),
-                password: formData.get('password')
-            });
-        } catch (error) {
-            setMessage("Login failed. Please try again.");
-            console.error(error);
+    const handleSubmit = async () => {
+        if(email == "" && password == "") {
+            toast("Enter credentials to login")
+            return;
+        }
+        setLoading(true);
+        const response = await signIn("credentials", {
+            email,
+            password,
+            redirect: false,
+        });
+
+        setLoading(false);
+
+        if (response?.error) {
+            toast( "Invalid credentials. Please try again.");
+        } else {
+            toast("Login successful!");
+            window.location.href = "/client/dashboard";
         }
     }
 
@@ -87,22 +99,16 @@ export default function Login() {
                             type="submit"
                             className="group relative w-full flex justify-center py-3 px-4 border border-transparent rounded-lg text-white bg-blue-600 hover:bg-blue-500 transition-all hover:shadow-lg hover:shadow-blue-500/25 font-medium"
                         >
-                            Sign in
+                           {loading ? "Logging in..." : "Login"}
                         </button>
                     </div>
 
                     <div className="text-center text-sm">
-                        <span className="text-gray-600">Don't have an account?</span>{" "}
+                        <span className="text-gray-600">Don&apos;t have an account?</span>{" "}
                         <a href="/client/signup" className="font-medium text-blue-600 hover:text-blue-500">
                             Sign up
                         </a>
                     </div>
-
-                    {message && (
-                        <div className="p-4 rounded-lg bg-red-50 text-red-700">
-                            {message}
-                        </div>
-                    )}
                 </form>
             </div>
         </div>

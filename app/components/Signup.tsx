@@ -17,7 +17,7 @@ export default function Signup() {
       console.log(response.error);
     } else {
       setMessage(response.success as string);
-      console.log(response.success);
+      window.location.href = "/client/login";
     }
   }
 

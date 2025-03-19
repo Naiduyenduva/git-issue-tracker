@@ -3,6 +3,7 @@
 import prisma from "../lib/prismdb";
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
+import bcrypt from "bcrypt";
 
 const signupSchema = z.object({
   username: z.string().min(2, "Name must be at least 2 characters long"),
@@ -20,8 +21,10 @@ export async function createUser(formData: FormData) {
     return { error: "Invalid input" };
   }
 
+  const hashedpassword = await bcrypt.hash(password,10);
+
   await prisma.user.create({
-    data: { username, email, password },
+    data: { username, email, password:hashedpassword },
   });
   revalidatePath("/client/signup");
   return { success: "user created successfully" };
