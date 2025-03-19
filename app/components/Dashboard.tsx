@@ -48,7 +48,7 @@ export default function Dashboard() {
   const [repoUrl, setRepoUrl] = useState("");
   const [message, setMessage] = useState("");
   const {data:session} = useSession();
-  const userId = session?.user.id
+  const userId = session?.user.id;
 
   async function handleSubmit(formData: FormData) {
     const response = await addRepository(formData);
@@ -67,7 +67,6 @@ export default function Dashboard() {
   const fetchRepoData = useCallback(async () => {
     if (!userId) return;
     const data = await fetchRepositoriesWithIssues(userId);
-    console.log(data);
     if (!("error" in data)) {
       setRepositories(data.repositories);
     }
@@ -133,9 +132,9 @@ export default function Dashboard() {
             </Avatar>
             {sidebarOpen && (
               <div className="ml-3">
-                <p className="text-sm font-medium">John Doe</p>
+                <p className="text-sm font-medium">{session?.user.username}</p>
                 <p className="text-xs text-muted-foreground">
-                  john@example.com
+                  {session?.user.email}
                 </p>
               </div>
             )}
@@ -168,7 +167,7 @@ export default function Dashboard() {
                         src="/placeholder.svg?height=32&width=32"
                         alt="User"
                       />
-                      <AvatarFallback>JD</AvatarFallback>
+                      <AvatarFallback>{session?.user.username}</AvatarFallback>
                     </Avatar>
                   </Button>
                 </DropdownMenuTrigger>

@@ -60,7 +60,6 @@ export const authOptions = {
                   username: true
                 },
               });
-              console.log(isUserExists)
 
               if (!isUserExists) {
                 throw new Error('your credentials are wrong')

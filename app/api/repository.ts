@@ -25,7 +25,7 @@ export async function addRepository(formData: FormData) {
   const [, owner, name] = match;
 
   const existingRepo = await prisma.repository.findFirst({
-    where: { owner, name },
+    where: { owner, name, userId },
   });
 
   if (existingRepo) {

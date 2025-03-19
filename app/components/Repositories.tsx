@@ -20,6 +20,7 @@ const Repositories: React.FC<{
     <div>
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mb-8">
         {Array.isArray(repositories) ? (
+          repositories.length>0 ? (
           repositories.map((repo) => (
             <Card
               key={repo.id}
@@ -54,6 +55,7 @@ const Repositories: React.FC<{
               </CardFooter>
             </Card>
           ))
+        ):(<p>No repositories found. Add one to track</p>)
         ) : (
           <p className="text-red-500">Error: {repositories.error}</p>
         )}

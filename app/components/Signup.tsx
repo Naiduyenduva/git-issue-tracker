@@ -14,7 +14,6 @@ export default function Signup() {
 
     if (response.error) {
       setMessage(response.error);
-      console.log(response.error);
     } else {
       setMessage(response.success as string);
       window.location.href = "/client/login";
@@ -29,7 +28,7 @@ export default function Signup() {
             Create Account
           </h2>
           <p className="text-gray-600">
-            Join IssueWatch to start tracking your repositories
+            Join IssueTracker to start tracking your repositories
           </p>
         </div>
 
@@ -96,7 +95,7 @@ export default function Signup() {
           <div>
             <button
               type="submit"
-              className="group relative w-full flex justify-center py-3 px-4 border border-transparent rounded-lg text-white bg-blue-600 hover:bg-blue-500 transition-all hover:shadow-lg hover:shadow-blue-500/25 font-medium"
+              className="cursor-pointer group relative w-full flex justify-center py-3 px-4 border border-transparent rounded-lg text-white bg-blue-600 hover:bg-blue-500 transition-all hover:shadow-lg hover:shadow-blue-500/25 font-medium"
             >
               Create Account
             </button>

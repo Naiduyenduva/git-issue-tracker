@@ -13,7 +13,6 @@ export async function checkForNewIssues() {
       const response = await axios.get(apiUrl, {
         headers: { "User-Agent": "YourAppName" },
       });
-      console.log(response.data);
 
       const issues = response.data;
       for (const issue of issues) {
@@ -72,7 +71,7 @@ export async function fetchRepositoriesWithIssues(userId: string | undefined) {
 
     return { repositories };
   } catch (error) {
-    console.log("Error fetching repositories and issues:", error);
+    console.log(error)
     return { error: "Failed to fetch repositories and issues" };
   }
 }
