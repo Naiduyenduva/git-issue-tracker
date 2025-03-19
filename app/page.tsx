@@ -93,7 +93,7 @@ export default function LandingPage() {
                 </div>
                 <h3 className="text-xl font-bold">Advanced Analytics</h3>
                 <p className="text-center text-muted-foreground">
-                  Gain insights into your team's performance with detailed metrics and customizable dashboards.
+                  Gain insights into your team&apos;s performance with detailed metrics and customizable dashboards.
                 </p>
               </div>
               <div className="flex flex-col items-center space-y-4 rounded-lg border p-6">
@@ -120,7 +120,7 @@ export default function LandingPage() {
                 </div>
                 <h3 className="text-xl font-bold">Custom Workflows</h3>
                 <p className="text-center text-muted-foreground">
-                  Create custom workflows that match your team's processes and automatically move issues through stages.
+                  Create custom workflows that match your team&apos;s processes and automatically move issues through stages.
                 </p>
               </div>
               <div className="flex flex-col items-center space-y-4 rounded-lg border p-6">
@@ -227,7 +227,7 @@ export default function LandingPage() {
                 <div className="inline-block rounded-lg bg-background px-3 py-1 text-sm">Pricing</div>
                 <h2 className="text-3xl font-bold tracking-tighter md:text-4xl/tight">Simple, transparent pricing</h2>
                 <p className="max-w-[900px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
-                  Choose the plan that's right for your team. All plans include a 14-day free trial.
+                  Choose the plan that&apos;s right for your team. All plans include a 14-day free trial.
                 </p>
               </div>
             </div>
@@ -352,7 +352,7 @@ export default function LandingPage() {
               <div className="space-y-2">
                 <h3 className="font-bold">Is there a limit to how many team members I can add?</h3>
                 <p className="text-muted-foreground">
-                  No, there's no limit to team members. Pricing is based on a per-user basis, so you can add as many
+                  No, there&apos;s no limit to team members. Pricing is based on a per-user basis, so you can add as many
                   team members as needed.
                 </p>
               </div>
@@ -366,7 +366,7 @@ export default function LandingPage() {
               <div className="space-y-2">
                 <h3 className="font-bold">Can I customize the issue tracking workflow?</h3>
                 <p className="text-muted-foreground">
-                  Absolutely. Our Pro and Enterprise plans allow you to create custom workflows that match your team's
+                  Absolutely. Our Pro and Enterprise plans allow you to create custom workflows that match your team&apos;s
                   specific processes and automatically move issues through different stages.
                 </p>
               </div>

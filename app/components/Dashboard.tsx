@@ -3,13 +3,9 @@
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
-  AlertCircle,
-  CheckCircle,
   Github,
   Home,
   LayoutDashboard,
@@ -37,23 +33,17 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+
 import { addRepository } from "../api/repository"
 import { fetchRepositories } from "../api/issues"
 import { fetchAllIssues } from "../api/issues"
-
-type issuetype = {
-  id: string;
-  title: string;
-  createdAt: Date;
-  repository: { id: string; name: string; owner: string };
-  number?: number; // Mark as optional
-  state?: string; // Mark as optional
-};
+import Issues from "./Issues"
+import Repositories from "./Repositories"
+import { RepositoryState, issuetype } from "../client/types"
 
 export default function Dashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(true)
-  const [repositories, setRepositories] = useState<{ id: string; owner: string; name: string; userId:string;}[] | { error: string }>([])
+  const [repositories, setRepositories] = useState<RepositoryState>([]);
   const [isAddingRepo, setIsAddingRepo] = useState(false)
   const [issues, setIssues] = useState<issuetype[]>([]);
 
@@ -61,17 +51,18 @@ export default function Dashboard() {
   const [message, setMessage] = useState("");
   const userId = process.env.USERID;
 
-  async function handleSubmit (formData: FormData) {
+  async function handleSubmit(formData: FormData) {
     const response = await addRepository(formData);
 
-    if(response.error) {
-        setMessage(response.error)
-        console.log(message)
+    if (response.error) {
+      setMessage(response.error)
+      console.log(message)
     } else {
-        setMessage(response.success as string);
-        setIsAddingRepo(false);
-        setRepoUrl("")
-        fetchIssues();
+      setMessage(response.success as string);
+      setIsAddingRepo(false);
+      setRepoUrl("")
+      fetchRepos()
+      fetchIssues();
     }
   }
 
@@ -88,19 +79,19 @@ export default function Dashboard() {
   async function fetchIssues() {
     const response = await fetchAllIssues(); // ✅ Fetch all issues from DB
     console.log(response);
-    
+
     if ("error" in response) {
       console.log(response.error);
       return;
     }
     setIssues(response); // ✅ Set issues instead of repositories
-}
+  }
 
-  useEffect(()=> {
+  useEffect(() => {
     fetchIssues();
     fetchRepos();
-  },[])
-  
+  }, [])
+
 
   return (
     <div className="flex min-h-screen bg-background">
@@ -225,121 +216,32 @@ export default function Dashboard() {
                 </DialogHeader>
                 <div className="grid gap-4 py-4">
                   <div className="grid gap-2">
-                <form action={handleSubmit} className="flex flex-col gap-3">
-                  <Input
-                      type="text"
-                      name="repoUrl"
-                      placeholder="Enter GitHub repo URL"
-                      value={repoUrl}
-                      onChange={(e) => setRepoUrl(e.target.value)}
-                      required
-                      className="outline-none"
-                  />
-                  <Button variant="outline" className="cursor-pointer" onClick={() => setIsAddingRepo(false)}>
-                    Cancel
-                  </Button>
-                  <Input type="hidden" name="userId" value={userId} /> {/* Hidden userId field */}
-                  <Button type="submit" className="cursor-pointer">Add Repository</Button>
-                </form>
+                    <form action={handleSubmit} className="flex flex-col gap-3">
+                      <Input
+                        type="text"
+                        name="repoUrl"
+                        placeholder="Enter GitHub repo URL"
+                        value={repoUrl}
+                        onChange={(e) => setRepoUrl(e.target.value)}
+                        required
+                        className="outline-none"
+                      />
+                      <Button variant="outline" className="cursor-pointer" onClick={() => setIsAddingRepo(false)}>
+                        Cancel
+                      </Button>
+                      <Input type="hidden" name="userId" value={userId} /> {/* Hidden userId field */}
+                      <Button type="submit" className="cursor-pointer">Add Repository</Button>
+                    </form>
                   </div>
                 </div>
               </DialogContent>
             </Dialog>
           </div>
-
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mb-8">
-            { Array.isArray(repositories) ? (
-            repositories.map((repo) => (
-              <Card
-                key={repo.id}
-                className={`cursor-pointer hover:border-primary transition-colors`}
-                
-              >
-                <CardHeader className="pb-2">
-                  <CardTitle className="flex items-center">
-                    <Github className="mr-2 h-5 w-5" />
-                    {repo.name}
-                  </CardTitle>
-                  <CardDescription>{repo.owner}/{repo.name}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center justify-between text-sm">
-                    <div className="flex items-center">
-                      <AlertCircle className="mr-1 h-4 w-4 text-red-500" />
-                      <span>{issues.length} issues</span>
-                    </div>
-                  </div>
-                </CardContent>
-                <CardFooter className="pt-1">
-                  <Button variant="ghost" size="sm" className="w-full" asChild>
-                    <Link href={`https://github.com/${repo.owner}/${repo.name}`} target="_blank">
-                      View on GitHub
-                    </Link>
-                  </Button>
-                </CardFooter>
-              </Card>
-            ))
-            ) : (<p>Hello this is error</p>)
-          }
-          </div>
+          <Repositories repositories={repositories} issues={issues} />
         </main>
         <h2 className="text-2xl font-bold pl-5 pb-5">Recent 5 issues of Repositories</h2>
-        <Tabs defaultValue="list" className="mb-8 px-5">
-        <TabsList>
-          <TabsTrigger value="list">List View</TabsTrigger>
-        </TabsList>
-        <TabsContent value="list">
-          <Card>
-            <CardContent className="p-0">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-[50px]">Status</TableHead>
-                    <TableHead>Title</TableHead>
-                    <TableHead>Repository</TableHead>
-                    <TableHead className="text-right">Number</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  { issues.map((issue) => (
-                        <TableRow key={issue.id}>
-                          <TableCell>
-                            {issue.state === "open" ? (
-                              <AlertCircle className="h-5 w-5 text-red-500" />
-                            ) : (
-                              <CheckCircle className="h-5 w-5 text-green-500" />
-                            )}
-                          </TableCell>
-                          <TableCell className="font-medium">
-                            <span>{issue.title.length > 50 ? issue.title.slice(0, 50) + "..." : issue.title}</span>
-                          </TableCell>
-                          <TableCell className="font-medium text-muted-foreground">
-                            <span>{issue.repository.owner}/{issue.repository.name}</span>
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <span className="text-xs text-muted-foreground">
-                              #{issue.number}
-                            </span>
-                          </TableCell>
-                        </TableRow>
-                      ))}              
-                  {issues.length === 0 && (
-                    <TableRow>
-                      <TableCell colSpan={4} className="text-center py-8">
-                        <div className="flex flex-col items-center justify-center text-muted-foreground">
-                          <AlertCircle className="h-8 w-8 mb-2" />
-                          <p>No issues found</p>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
-    </div>
+        <Issues issues={issues} />
+      </div>
     </div>
   )
 }

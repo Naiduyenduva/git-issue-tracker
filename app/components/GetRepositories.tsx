@@ -11,7 +11,8 @@ export default function GetRepositories ({userId}:{userId:string}) {
                 console.log(response)
                 setMessage("fetched successfully")
             } catch (error) {
-                setMessage("Failed to fetch repositories.");  
+                setMessage("Failed to fetch repositories."); 
+                console.log(error) 
             }
         }
         return (

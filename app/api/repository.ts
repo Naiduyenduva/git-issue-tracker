@@ -56,7 +56,7 @@ export async function addRepository(formData: FormData) {
     // ✅ Insert multiple issues into database
     if (issues.length > 0) {
       await prisma.issue.createMany({
-        data: issues.map((issue: any) => ({
+        data: issues.map((issue: { title: string; state: string; number: number; id: number }) => ({
           title: issue.title,
           state: issue.state,
           number: issue.number,
