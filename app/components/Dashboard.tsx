@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,21 +34,21 @@ import {
 } from "@/components/ui/dialog";
 
 import { addRepository } from "../api/repository";
-import { fetchRepositories } from "../api/issues";
-import { fetchAllIssues } from "../api/issues";
 import Issues from "./Issues";
 import Repositories from "./Repositories";
-import { RepositoryState, issuetype } from "../client/types";
+import { RepositoryState } from "../client/types";
+import { useSession } from "next-auth/react";
+import { fetchRepositoriesWithIssues } from "../api/issues";
 
 export default function Dashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [repositories, setRepositories] = useState<RepositoryState>([]);
   const [isAddingRepo, setIsAddingRepo] = useState(false);
-  const [issues, setIssues] = useState<issuetype[]>([]);
 
   const [repoUrl, setRepoUrl] = useState("");
   const [message, setMessage] = useState("");
-  const userId = process.env.USERID;
+  const {data:session} = useSession();
+  const userId = session?.user.id
 
   async function handleSubmit(formData: FormData) {
     const response = await addRepository(formData);
@@ -60,36 +60,22 @@ export default function Dashboard() {
       setMessage(response.success as string);
       setIsAddingRepo(false);
       setRepoUrl("");
-      fetchRepos();
-      fetchIssues();
+      fetchRepoData();
     }
   }
 
-  async function fetchRepos() {
-    const response = await fetchRepositories();
-    console.log(response);
-    if ("error" in response) {
-      console.log(response.error);
-      return;
+  const fetchRepoData = useCallback(async () => {
+    if (!userId) return;
+    const data = await fetchRepositoriesWithIssues(userId);
+    console.log(data);
+    if (!("error" in data)) {
+      setRepositories(data.repositories);
     }
-    setRepositories(response);
-  }
-
-  async function fetchIssues() {
-    const response = await fetchAllIssues(); // ✅ Fetch all issues from DB
-    console.log(response);
-
-    if ("error" in response) {
-      console.log(response.error);
-      return;
-    }
-    setIssues(response); // ✅ Set issues instead of repositories
-  }
+  }, [userId]);
 
   useEffect(() => {
-    fetchIssues();
-    fetchRepos();
-  }, []);
+    fetchRepoData();
+  }, [fetchRepoData]);
 
   return (
     <div className="flex min-h-screen bg-background">
@@ -256,12 +242,12 @@ export default function Dashboard() {
               </DialogContent>
             </Dialog>
           </div>
-          <Repositories repositories={repositories} issues={issues} />
+          <Repositories repositories={repositories} />
         </main>
         <h2 className="text-2xl font-bold pl-5 pb-5">
           Recent 5 issues of Repositories
         </h2>
-        <Issues issues={issues} />
+        <Issues repositories={repositories} />
       </div>
     </div>
   );

@@ -44,39 +44,35 @@ export async function checkForNewIssues() {
   return { success: "Issues checked successfully!" };
 }
 
-export async function fetchRepositories() {
-  try {
-    const repositories = await prisma.repository.findMany();
-    return repositories;
-  } catch (error) {
-    console.error("Error fetching repositories:", error);
-    return { error: "Failed to fetch repositories" };
+export async function fetchRepositoriesWithIssues(userId: string | undefined) {
+  if (!userId) {
+    return { error: "User ID is required" };
   }
-}
 
-export async function fetchAllIssues() {
   try {
-    const issues = await prisma.issue.findMany({
+    const repositories = await prisma.repository.findMany({
+      where: { userId },
       select: {
         id: true,
-        title: true,
-        state: true,
-        number: true,
-        createdAt: true,
-        repository: {
+        name: true,
+        owner: true,
+        userId:true,
+        issues: { // Fetch related issues for each repository
           select: {
             id: true,
-            name: true,
-            owner: true,
+            title: true,
+            state: true,
+            number: true,
+            createdAt: true,
           },
+          orderBy: { createdAt: "desc" }, // Fetch latest issues first
         },
       },
-      orderBy: { createdAt: "desc" }, // Fetch latest issues first
     });
 
-    return issues;
+    return { repositories };
   } catch (error) {
-    console.error("Error fetching all issues:", error);
-    return { error: "Failed to fetch issues from database" };
+    console.log("Error fetching repositories and issues:", error);
+    return { error: "Failed to fetch repositories and issues" };
   }
 }

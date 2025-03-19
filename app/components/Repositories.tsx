@@ -11,12 +11,11 @@ import { Button } from "@/components/ui/button";
 import { Github } from "lucide-react";
 import Link from "next/link";
 import { AlertCircle } from "lucide-react";
-import { RepositoryState, issuetype, Repository } from "../client/types";
+import { RepositoryState, Repository } from "../client/types";
 
 const Repositories: React.FC<{
   repositories: Repository[] | RepositoryState;
-  issues: issuetype[];
-}> = ({ repositories, issues }) => {
+}> = ({ repositories }) => {
   return (
     <div>
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mb-8">
@@ -39,7 +38,7 @@ const Repositories: React.FC<{
                 <div className="flex items-center justify-between text-sm">
                   <div className="flex items-center">
                     <AlertCircle className="mr-1 h-4 w-4 text-red-500" />
-                    <span>{issues.length} issues</span>
+                    <span>{repo.issues.length} issues</span>
                   </div>
                 </div>
               </CardContent>
@@ -56,7 +55,7 @@ const Repositories: React.FC<{
             </Card>
           ))
         ) : (
-          <p>Hello this is error</p>
+          <p className="text-red-500">Error: {repositories.error}</p>
         )}
       </div>
     </div>
