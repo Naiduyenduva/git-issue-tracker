@@ -39,6 +39,7 @@ import Repositories from "./Repositories";
 import { RepositoryState } from "../client/types";
 import { useSession } from "next-auth/react";
 import { fetchRepositoriesWithIssues } from "../api/issues";
+import { signOut } from "next-auth/react";
 
 export default function Dashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -63,6 +64,11 @@ export default function Dashboard() {
       fetchRepoData();
     }
   }
+
+  const handleLogout = () => {
+    signOut({ callbackUrl: "/" }); // Redirects to home after logout
+  };
+  
 
   const fetchRepoData = useCallback(async () => {
     if (!userId) return;
@@ -185,7 +191,7 @@ export default function Dashboard() {
                   <DropdownMenuSeparator />
                   <DropdownMenuItem>
                     <LogOut className="mr-2 h-4 w-4" />
-                    Log out
+                    <span onClick={handleLogout}>Log out</span>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>

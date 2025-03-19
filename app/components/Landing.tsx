@@ -1,3 +1,4 @@
+"use client"
 import { Github, Mail, Bell, Shield, Zap, Star, Code, GitPullRequest } from 'lucide-react';
 import Link from 'next/link';
 
