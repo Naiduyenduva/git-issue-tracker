@@ -1,10 +1,10 @@
-import Signup from "@/app/components/Signup"
+import Signup from "@/app/components/Signup";
 const page = () => {
   return (
     <div>
-        <Signup />
+      <Signup />
     </div>
-  )
-}
+  );
+};
 
-export default page
+export default page;

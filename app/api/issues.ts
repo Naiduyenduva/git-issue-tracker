@@ -7,14 +7,14 @@ export async function checkForNewIssues() {
 
   for (const repo of repos) {
     const { owner, name, id } = repo;
-    const apiUrl:string = `https://api.github.com/repos/${owner}/${name}/issues?per_page=5&sort=created&direction=desc`;
+    const apiUrl: string = `https://api.github.com/repos/${owner}/${name}/issues?per_page=5&sort=created&direction=desc`;
 
     try {
       const response = await axios.get(apiUrl, {
         headers: { "User-Agent": "YourAppName" },
       });
-      console.log(response.data)
-      
+      console.log(response.data);
+
       const issues = response.data;
       for (const issue of issues) {
         const existingIssue = await prisma.issue.findUnique({
@@ -27,7 +27,7 @@ export async function checkForNewIssues() {
             data: {
               issueId: issue.id,
               title: issue.title,
-              number:issue.number,
+              number: issue.number,
               state: issue.state,
               repositoryId: id,
             },
@@ -60,8 +60,8 @@ export async function fetchAllIssues() {
       select: {
         id: true,
         title: true,
-        state:true,
-        number:true,
+        state: true,
+        number: true,
         createdAt: true,
         repository: {
           select: {

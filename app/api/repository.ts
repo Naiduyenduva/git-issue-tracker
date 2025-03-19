@@ -56,13 +56,20 @@ export async function addRepository(formData: FormData) {
     // ✅ Insert multiple issues into database
     if (issues.length > 0) {
       await prisma.issue.createMany({
-        data: issues.map((issue: { title: string; state: string; number: number; id: number }) => ({
-          title: issue.title,
-          state: issue.state,
-          number: issue.number,
-          issueId: issue.id,
-          repositoryId: newRepo.id, // ✅ Link issue to repository
-        })),
+        data: issues.map(
+          (issue: {
+            title: string;
+            state: string;
+            number: number;
+            id: number;
+          }) => ({
+            title: issue.title,
+            state: issue.state,
+            number: issue.number,
+            issueId: issue.id,
+            repositoryId: newRepo.id, // ✅ Link issue to repository
+          })
+        ),
       });
     }
   } catch (error) {
@@ -75,5 +82,5 @@ export async function addRepository(formData: FormData) {
 }
 
 export async function getRepositories(userId: string) {
-    return await prisma.repository.findMany({ where: { userId } });
-  }
+  return await prisma.repository.findMany({ where: { userId } });
+}
