@@ -1,10 +1,9 @@
-"use client"
 import { Github, Mail, Bell, Shield, Zap, Star, Code, GitPullRequest } from 'lucide-react';
 import Link from 'next/link';
 
 const Landing = () => {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 scroll-smooth">
       {/* Header/Navigation */}
       <nav className="bg-white/50 backdrop-blur-lg border-b border-gray-100 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
@@ -18,12 +17,14 @@ const Landing = () => {
             <div className="flex items-center space-x-6">
               <a href="#features" className="text-gray-600 hover:text-gray-900 transition-colors">Features</a>
               <a href="#how-it-works" className="text-gray-600 hover:text-gray-900 transition-colors">How it Works</a>
+              <Link href='/client/signup'>
               <button className="cursor-pointer bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-500 transition-all hover:shadow-lg hover:shadow-blue-500/25">
-                <Link href='/client/signup'>Get Started</Link>
-              </button>
+                Get Started
+              </button></Link>
+              <Link href='/client/login'>
               <button className="cursor-pointer bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-500 transition-all hover:shadow-lg hover:shadow-blue-500/25">
-                <Link href='/client/login'>Login</Link>
-              </button>
+                Login
+              </button></Link>
             </div>
           </div>
         </div>

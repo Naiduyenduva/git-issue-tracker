@@ -15,6 +15,7 @@ import {
   Search,
   Settings,
   User,
+  X,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -45,11 +46,24 @@ export default function Dashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [repositories, setRepositories] = useState<RepositoryState>([]);
   const [isAddingRepo, setIsAddingRepo] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
   const [repoUrl, setRepoUrl] = useState("");
   const [message, setMessage] = useState("");
   const {data:session} = useSession();
   const userId = session?.user.id;
+
+  // Handle responsive sidebar
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+      setSidebarOpen(window.innerWidth >= 768);
+    };
+
+    handleResize(); // Initial check
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   async function handleSubmit(formData: FormData) {
     const response = await addRepository(formData);
@@ -66,9 +80,8 @@ export default function Dashboard() {
   }
 
   const handleLogout = () => {
-    signOut({ callbackUrl: "/" }); // Redirects to home after logout
+    signOut({ callbackUrl: "/" });
   };
-  
 
   const fetchRepoData = useCallback(async () => {
     if (!userId) return;
@@ -83,27 +96,38 @@ export default function Dashboard() {
   }, [fetchRepoData]);
 
   return (
-    <div className="flex min-h-screen bg-background">
+    <div className="flex min-h-screen bg-background relative">
+      {/* Overlay for mobile */}
+      {sidebarOpen && isMobile && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-20"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
       <div
         className={`${
-          sidebarOpen ? "w-64" : "w-16"
-        } bg-muted transition-all duration-300 border-r flex flex-col`}
+          sidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
+        } ${
+          isMobile ? "fixed" : "relative"
+        } md:w-64 w-64 bg-muted transition-transform duration-300 border-r flex flex-col h-full z-30`}
       >
         <div className="p-4 border-b flex items-center justify-between">
-          <div
-            className={`flex items-center ${!sidebarOpen && "justify-center"}`}
-          >
+          <div className="flex items-center">
             <Github className="h-6 w-6" />
-            {sidebarOpen && <span className="ml-2 font-bold">IssueTracker</span>}
+            <span className="ml-2 font-bold">IssueTracker</span>
           </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-          >
-            <Menu className="h-5 w-5" />
-          </Button>
+          {isMobile && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setSidebarOpen(false)}
+              className="md:hidden"
+            >
+              <X className="h-5 w-5" />
+            </Button>
+          )}
         </div>
         <div className="flex-1 py-4">
           <nav className="space-y-1 px-2">
@@ -111,73 +135,69 @@ export default function Dashboard() {
               href="#"
               className="flex items-center px-2 py-2 text-sm font-medium rounded-md bg-blue-500 text-primary-foreground"
             >
-              <LayoutDashboard
-                className={`h-5 w-5 ${sidebarOpen ? "mr-3" : "mx-auto"}`}
-              />
-              {sidebarOpen && <span>Dashboard</span>}
+              <LayoutDashboard className="h-5 w-5 mr-3" />
+              <span>Dashboard</span>
             </Link>
             <Link
               href="/"
               className="flex items-center px-2 py-2 text-sm font-medium rounded-md text-muted-foreground hover:bg-accent hover:text-accent-foreground"
             >
-              <Home className={`h-5 w-5 ${sidebarOpen ? "mr-3" : "mx-auto"}`} />
-              {sidebarOpen && <span>Home</span>}
+              <Home className="h-5 w-5 mr-3" />
+              <span>Home</span>
             </Link>
           </nav>
         </div>
         <div className="p-4 border-t">
-          <div
-            className={`flex items-center ${!sidebarOpen && "justify-center"}`}
-          >
+          <div className="flex items-center">
             <Avatar className="h-8 w-8">
-              <AvatarImage
-                src="/placeholder.svg?height=32&width=32"
-                alt="User"
-              />
+              <AvatarImage src="/placeholder.svg?height=32&width=32" alt="User" />
               <AvatarFallback>U</AvatarFallback>
             </Avatar>
-            {sidebarOpen && (
-              <div className="ml-3">
-                <p className="text-sm font-medium">{session?.user.username}</p>
-                <p className="text-xs text-muted-foreground">
-                  {session?.user.email}
-                </p>
-              </div>
-            )}
+            <div className="ml-3">
+              <p className="text-sm font-medium">{session?.user.username}</p>
+              <p className="text-xs text-muted-foreground">
+                {session?.user.email}
+              </p>
+            </div>
           </div>
         </div>
       </div>
 
       {/* Main content */}
-      <div className="flex-1">
+      <div className="flex-1 flex flex-col min-h-screen">
         {/* Header */}
-        <header className="bg-background border-b">
+        <header className="bg-background border-b sticky top-0 z-10">
           <div className="flex h-16 items-center justify-between px-4">
-            <div className="flex items-center">
+            <div className="flex items-center space-x-4">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setSidebarOpen(!sidebarOpen)}
+                className="md:hidden"
+              >
+                <Menu className="h-5 w-5" />
+              </Button>
               <h1 className="text-xl font-semibold">Dashboard</h1>
             </div>
             <div className="flex items-center space-x-4">
-              <div className="relative">
+              <div className="relative hidden sm:block">
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
                   type="search"
                   placeholder="Search..."
-                  className="w-64 pl-8"
+                  className="w-[200px] md:w-64 pl-8"
                 />
               </div>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="icon" className="rounded-full">
                     <Avatar>
-                      <AvatarImage
-                        src="/placeholder.svg?height=32&width=32"
-                        alt="User"
-                      />
+                      <AvatarImage src="/placeholder.svg?height=32&width=32" alt="User" />
                       <AvatarFallback>{session?.user.username}</AvatarFallback>
                     </Avatar>
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
+                <DropdownMenuContent align="end" className="w-56">
                   <DropdownMenuLabel>My Account</DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem>
@@ -189,9 +209,9 @@ export default function Dashboard() {
                     Settings
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleLogout}>
                     <LogOut className="mr-2 h-4 w-4" />
-                    <span onClick={handleLogout}>Log out</span>
+                    Log out
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -200,17 +220,17 @@ export default function Dashboard() {
         </header>
 
         {/* Content */}
-        <main className="p-6">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold">GitHub Repositories</h2>
+        <main className="flex-1 p-4 md:p-6 overflow-auto">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+            <h2 className="sm:text-2xl font-bold">GitHub Repositories</h2>
             <Dialog open={isAddingRepo} onOpenChange={setIsAddingRepo}>
               <DialogTrigger asChild>
-                <button className=" cursor-pointer group relative flex justify-center py-3 px-4 border border-transparent rounded-lg text-white bg-blue-600 hover:bg-blue-500 transition-all hover:shadow-lg hover:shadow-blue-500/25 font-medium">
-                  <Plus className="mr-2 mt-1 h-4 w-4" />
+                <button className="w-auto cursor-pointer group relative flex justify-center py-3 px-4 border border-transparent rounded-lg text-white bg-blue-600 hover:bg-blue-500 transition-all hover:shadow-lg hover:shadow-blue-500/25 font-medium">
+                  <Plus className="mr-2 mt-[6px] h-4 w-4" />
                   Add Repository
                 </button>
               </DialogTrigger>
-              <DialogContent>
+              <DialogContent className="sm:max-w-[425px] w-[95vw] mx-auto">
                 <DialogHeader>
                   <DialogTitle>Add GitHub Repository</DialogTitle>
                   <DialogDescription>
@@ -218,41 +238,44 @@ export default function Dashboard() {
                   </DialogDescription>
                 </DialogHeader>
                 <div className="grid gap-4 py-4">
-                  <div className="grid gap-2">
-                    <form action={handleSubmit} className="flex flex-col gap-3">
-                      <input
-                        type="text"
-                        name="repoUrl"
-                        placeholder="Enter GitHub repo URL"
-                        value={repoUrl}
-                        onChange={(e) => setRepoUrl(e.target.value)}
-                        required
-                        className="appearance-none relative block w-full px-3 py-2 border border-gray-300 rounded-lg placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        />
+                  <form action={handleSubmit} className="flex flex-col gap-3">
+                    <input
+                      type="text"
+                      name="repoUrl"
+                      placeholder="Enter GitHub repo URL"
+                      value={repoUrl}
+                      onChange={(e) => setRepoUrl(e.target.value)}
+                      required
+                      className="appearance-none relative block w-full px-3 py-2 border border-gray-300 rounded-lg placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                    <Input type="hidden" name="userId" value={userId} />
+                    <div className="grid flex-col sm:flex-row gap-2">
                       <Button
+                        type="button"
                         variant="outline"
-                        className="cursor-pointer bg-red-50"
+                        className="w-full"
                         onClick={() => setIsAddingRepo(false)}
                       >
                         Cancel
                       </Button>
-                      <Input type="hidden" name="userId" value={userId} />{" "}
-                      {/* Hidden userId field */}
-                      <button type="submit" className="group relative flex justify-center py-3 px-4 border border-transparent rounded-lg text-white bg-blue-600 hover:bg-blue-500 transition-all hover:shadow-lg hover:shadow-blue-500/25 font-medium cursor-pointer">
-                      Add Repository
-                      </button>
-                    </form>
-                  </div>
+                      <Button
+                        type="submit"
+                        className="w-full bg-blue-600 hover:bg-blue-500 text-white"
+                      >
+                        Add Repository
+                      </Button>
+                    </div>
+                  </form>
                 </div>
               </DialogContent>
             </Dialog>
           </div>
           <Repositories repositories={repositories} />
+          <h2 className="sm:text-2xl font-bold mt-8 mb-4">
+            Recent 5 issues of Repositories
+          </h2>
+          <Issues repositories={repositories} />
         </main>
-        <h2 className="text-2xl font-bold pl-5 pb-5">
-          Recent 5 issues of Repositories
-        </h2>
-        <Issues repositories={repositories} />
       </div>
     </div>
   );

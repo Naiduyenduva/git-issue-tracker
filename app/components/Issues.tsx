@@ -38,7 +38,7 @@ const Issues: React.FC<{ repositories: RepositoryState }> = ({
       {allIssues.length == 0 ? (
         <p className="pl-5">No issues found</p>
       ) : (
-        <Tabs defaultValue="list" className="mb-8 px-5">
+        <Tabs defaultValue="list" className="mb-8">
           <TabsList>
             <TabsTrigger value="list">List View</TabsTrigger>
           </TabsList>
@@ -50,8 +50,8 @@ const Issues: React.FC<{ repositories: RepositoryState }> = ({
                     <TableRow>
                       <TableHead className="w-[50px]">Status</TableHead>
                       <TableHead>Title</TableHead>
-                      <TableHead>Repository</TableHead>
-                      <TableHead className="text-right">Number</TableHead>
+                      <TableHead className="hidden sm:table-cell">Repository</TableHead>
+                      <TableHead className="text-right hidden sm:table-cell">Number</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -65,19 +65,19 @@ const Issues: React.FC<{ repositories: RepositoryState }> = ({
                               <CheckCircle className="h-5 w-5 text-green-500" />
                             )}
                           </TableCell>
-                          <TableCell className="font-medium">
+                          <TableCell className="font-medium text-xs">
                             <span>
                               {issue.title.length > 50
                                 ? issue.title.slice(0, 50) + "..."
                                 : issue.title}
                             </span>
                           </TableCell>
-                          <TableCell className="font-medium text-muted-foreground">
+                          <TableCell className="font-medium text-muted-foreground hidden sm:table-cell">
                             <span>
                               {issue.repoOwner}/{issue.repoName}
                             </span>
                           </TableCell>
-                          <TableCell className="text-right">
+                          <TableCell className="text-right hidden sm:table-cell">
                             <span className="text-xs text-muted-foreground">
                               #{issue.number}
                             </span>
