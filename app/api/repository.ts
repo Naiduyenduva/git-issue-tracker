@@ -58,11 +58,11 @@ export async function addRepository(formData: FormData) {
           where: { repositoryId: existingRepo.id },
           select: { issueId: true },
         })
-      ).map((issue) => issue.issueId)
+      ).map((issue) => Number(issue.issueId))
     );
 
     const newIssues = issues.filter(
-      (issue: { id: bigint }) => !existingIssueIds.has(issue.id)
+      (issue: { id: number }) => !existingIssueIds.has(issue.id)
     );
 
     if (newIssues.length > 0) {

@@ -16,8 +16,8 @@ export async function checkForNewIssues() {
 
       const issues = response.data;
       for (const issue of issues) {
-        const existingIssue = await prisma.issue.findUnique({
-          where: { issueId: BigInt(issue.id) },
+        const existingIssue = await prisma.issue.findFirst({
+          where: { issueId: Number(issue.id) },
         });
 
         if (!existingIssue) {
