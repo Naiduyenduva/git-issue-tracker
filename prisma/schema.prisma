@@ -32,7 +32,7 @@ model Repository {
 
 model Issue {
   id            String   @id @default(uuid())
-  issueId       BigInt   @unique // GitHub issue ID
+  issueId       BigInt    // GitHub issue ID
   title         String
   state         String
   number        Int

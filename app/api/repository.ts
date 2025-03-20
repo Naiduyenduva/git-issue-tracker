@@ -24,18 +24,16 @@ export async function addRepository(formData: FormData) {
 
   const [, owner, name] = match;
 
-  const existingRepo = await prisma.repository.findFirst({
+  let existingRepo = await prisma.repository.findFirst({
     where: { owner, name, userId },
   });
 
-  if (existingRepo) {
-    return { error: "Repo already added" };
+  if (!existingRepo) {
+    // ✅ Create a new repository entry specific to this user
+    existingRepo = await prisma.repository.create({
+      data: { name, owner, userId },
+    });
   }
-
-  // ✅ Add the repository
-  const newRepo = await prisma.repository.create({
-    data: { name, owner, userId },
-  });
 
   const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
   if (!GITHUB_TOKEN) {
@@ -49,27 +47,33 @@ export async function addRepository(formData: FormData) {
     const { data: issues } = await axios.get(apiUrl, {
       headers: {
         "User-Agent": "git-issue-tracker",
-        Authorization: `Bearer ${GITHUB_TOKEN}`, // ✅ Corrected
+        Authorization: `Bearer ${GITHUB_TOKEN}`,
       },
     });
 
-    // ✅ Insert multiple issues into database
-    if (issues.length > 0) {
+    // ✅ Only add issues that are not already linked to this repository
+    const existingIssueIds = new Set(
+      (
+        await prisma.issue.findMany({
+          where: { repositoryId: existingRepo.id },
+          select: { issueId: true },
+        })
+      ).map((issue) => issue.issueId)
+    );
+
+    const newIssues = issues.filter(
+      (issue: { id: bigint }) => !existingIssueIds.has(issue.id)
+    );
+
+    if (newIssues.length > 0) {
       await prisma.issue.createMany({
-        data: issues.map(
-          (issue: {
-            title: string;
-            state: string;
-            number: number;
-            id: number;
-          }) => ({
-            title: issue.title,
-            state: issue.state,
-            number: issue.number,
-            issueId: issue.id,
-            repositoryId: newRepo.id, // ✅ Link issue to repository
-          })
-        ),
+        data: newIssues.map((issue: { title: string; state: string; number: number; id: number }) => ({
+          title: issue.title,
+          state: issue.state,
+          number: issue.number,
+          issueId: issue.id,
+          repositoryId: existingRepo.id, // ✅ Link to the specific user's repository
+        })),
       });
     }
   } catch (error) {
