@@ -41,6 +41,7 @@ import { RepositoryState } from "../client/types";
 import { useSession } from "next-auth/react";
 import { fetchRepositoriesWithIssues } from "../api/issues";
 import { signOut } from "next-auth/react";
+import { checkForNewIssues } from "../api/issues";
 
 export default function Dashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -78,6 +79,13 @@ export default function Dashboard() {
       fetchRepoData();
     }
   }
+
+  async function startIssueChecker () {
+    console.log("calling check for new issues")
+    await checkForNewIssues();
+    setTimeout(startIssueChecker,5000)
+}
+startIssueChecker();
 
   const handleLogout = () => {
     signOut({ callbackUrl: "/" });

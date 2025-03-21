@@ -29,7 +29,6 @@ export async function addRepository(formData: FormData) {
   });
 
   if (!existingRepo) {
-    // ✅ Create a new repository entry specific to this user
     existingRepo = await prisma.repository.create({
       data: { name, owner, userId },
     });
@@ -40,7 +39,6 @@ export async function addRepository(formData: FormData) {
     return { error: "GitHub token not found" };
   }
 
-  // ✅ Fetch the latest 5 issues
   const apiUrl = `https://api.github.com/repos/${owner}/${name}/issues?per_page=5&sort=created&direction=desc`;
 
   try {
@@ -72,7 +70,7 @@ export async function addRepository(formData: FormData) {
           state: issue.state,
           number: issue.number,
           issueId: issue.id,
-          repositoryId: existingRepo.id, // ✅ Link to the specific user's repository
+          repositoryId: existingRepo.id,
         })),
       });
     }

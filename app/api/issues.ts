@@ -3,7 +3,9 @@ import prisma from "../lib/prismdb";
 import axios from "axios";
 
 export async function checkForNewIssues() {
+  console.log("issues checking...")
   const repos = await prisma.repository.findMany();
+  let newissuefound = false;
 
   for (const repo of repos) {
     const { owner, name, id } = repo;
@@ -11,7 +13,9 @@ export async function checkForNewIssues() {
 
     try {
       const response = await axios.get(apiUrl, {
-        headers: { "User-Agent": "YourAppName" },
+        headers: { "User-Agent": "git-issue-tracker" ,
+          "Authorization": `Bearer ${process.env.GITHUB_TOKEN}`
+        },
       });
 
       const issues = response.data;
@@ -21,7 +25,8 @@ export async function checkForNewIssues() {
         });
 
         if (!existingIssue) {
-          // Save issue in DB
+          console.log(`repo user ${repo.userId}`)
+          newissuefound=true;
           await prisma.issue.create({
             data: {
               issueId: issue.id,
@@ -38,6 +43,9 @@ export async function checkForNewIssues() {
     } catch (error) {
       console.error(`Error fetching issues for ${owner}/${name}`, error);
     }
+  }
+  if(!newissuefound) {
+    console.log("not found bro")
   }
 
   return { success: "Issues checked successfully!" };
