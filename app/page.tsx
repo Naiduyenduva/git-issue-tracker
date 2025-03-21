@@ -7,7 +7,7 @@ function App() {
   useEffect(() => {
     const intervalId = setInterval(async () => {
       await checkForNewIssues();
-    }, 5000);
+    }, 360000);
   
     return () => clearInterval(intervalId);
   }, []);

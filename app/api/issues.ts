@@ -1,9 +1,10 @@
 "use server";
 import prisma from "../lib/prismdb";
 import axios from "axios";
+import sendMails from "./sendmail/sendmail";
 
 export async function checkForNewIssues() {
-  console.log("issues checking...")
+  console.log("issues checking...");
   const repos = await prisma.repository.findMany();
   let newissuefound = false;
 
@@ -13,8 +14,9 @@ export async function checkForNewIssues() {
 
     try {
       const response = await axios.get(apiUrl, {
-        headers: { "User-Agent": "git-issue-tracker" ,
-          "Authorization": `Bearer ${process.env.GITHUB_TOKEN}`
+        headers: {
+          "User-Agent": "git-issue-tracker",
+          Authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
         },
       });
 
@@ -25,8 +27,8 @@ export async function checkForNewIssues() {
         });
 
         if (!existingIssue) {
-          console.log(`repo user ${repo.userId}`)
-          newissuefound=true;
+          console.log(`repo user ${repo.userId}`);
+          newissuefound = true;
           await prisma.issue.create({
             data: {
               issueId: issue.id,
@@ -37,15 +39,29 @@ export async function checkForNewIssues() {
             },
           });
 
-          // Send email notification
+          const email = await prisma.user.findMany({
+            where: {
+              id: repo.userId,
+            },
+            select: {
+              email: true,
+            },
+          });
+
+          const emails = email.map((e) => e.email);
+          console.log(emails)
+
+          if (emails.length > 0) {
+            await sendMails(emails);
+          }
         }
       }
     } catch (error) {
       console.error(`Error fetching issues for ${owner}/${name}`, error);
     }
   }
-  if(!newissuefound) {
-    console.log("No new issues found")
+  if (!newissuefound) {
+    console.log("No new issues found");
   }
 
   return { success: "Issues checked successfully!" };
@@ -63,8 +79,9 @@ export async function fetchRepositoriesWithIssues(userId: string | undefined) {
         id: true,
         name: true,
         owner: true,
-        userId:true,
-        issues: { // Fetch related issues for each repository
+        userId: true,
+        issues: {
+          // Fetch related issues for each repository
           select: {
             id: true,
             title: true,
@@ -79,7 +96,7 @@ export async function fetchRepositoriesWithIssues(userId: string | undefined) {
 
     return { repositories };
   } catch (error) {
-    console.log(error)
+    console.log(error);
     return { error: "Failed to fetch repositories and issues" };
   }
 }
