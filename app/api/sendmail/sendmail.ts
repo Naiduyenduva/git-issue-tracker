@@ -30,7 +30,7 @@ export default async function sendMails(emails: string[]) {
       
           return { success: "Email sent successfully!" };
         } catch (error) {
-          console.log("email sending error");
+          console.log("email sending error",error);
           return { error: "failed to send email" };
         }
     }
