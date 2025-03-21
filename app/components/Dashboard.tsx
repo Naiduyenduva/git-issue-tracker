@@ -269,6 +269,7 @@ export default function Dashboard() {
                       >
                         Add Repository
                       </Button>
+                      {message && <p className="text-center text-red-700">{message}</p>}
                     </div>
                   </form>
                 </div>

@@ -2,7 +2,6 @@
 
 import prisma from "../lib/prismdb";
 import { z } from "zod";
-import { revalidatePath } from "next/cache";
 import bcrypt from "bcrypt";
 
 const signupSchema = z.object({
@@ -24,8 +23,7 @@ export async function createUser(formData: FormData) {
   const hashedpassword = await bcrypt.hash(password,10);
 
   await prisma.user.create({
-    data: { username, email, password:hashedpassword },
+    data: { username, email:email.toLowerCase(), password:hashedpassword },
   });
-  revalidatePath("/client/signup");
   return { success: "user created successfully" };
 }

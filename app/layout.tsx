@@ -33,7 +33,7 @@ export default function RootLayout({
         {children}
         <Toaster />
       </body>
-        </SessionProviderWrapper>
+      </SessionProviderWrapper>
     </html>
   );
 }

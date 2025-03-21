@@ -24,6 +24,12 @@ export async function addRepository(formData: FormData) {
 
   const [, owner, name] = match;
 
+  const response = await fetch(`https://github.com/${owner}/${name}`);
+  
+  if(!response.ok) {
+    return { error: "invalid url"}
+  }
+
   let existingRepo = await prisma.repository.findFirst({
     where: { owner, name, userId },
   });
@@ -49,7 +55,7 @@ export async function addRepository(formData: FormData) {
       },
     });
 
-    // ✅ Only add issues that are not already linked to this repository
+    //Only add issues that are not already linked to this repository
     const existingIssueIds = new Set(
       (
         await prisma.issue.findMany({
