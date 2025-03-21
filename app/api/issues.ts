@@ -45,7 +45,7 @@ export async function checkForNewIssues() {
     }
   }
   if(!newissuefound) {
-    console.log("not found bro")
+    console.log("No new issues found")
   }
 
   return { success: "Issues checked successfully!" };

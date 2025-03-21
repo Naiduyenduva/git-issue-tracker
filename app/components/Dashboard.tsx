@@ -41,7 +41,6 @@ import { RepositoryState } from "../client/types";
 import { useSession } from "next-auth/react";
 import { fetchRepositoriesWithIssues } from "../api/issues";
 import { signOut } from "next-auth/react";
-import { checkForNewIssues } from "../api/issues";
 
 export default function Dashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -51,19 +50,18 @@ export default function Dashboard() {
 
   const [repoUrl, setRepoUrl] = useState("");
   const [message, setMessage] = useState("");
-  const {data:session} = useSession();
+  const { data: session } = useSession();
   const userId = session?.user.id;
 
-  // Handle responsive sidebar
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth < 768);
       setSidebarOpen(window.innerWidth >= 768);
     };
 
-    handleResize(); // Initial check
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   async function handleSubmit(formData: FormData) {
@@ -79,13 +77,6 @@ export default function Dashboard() {
       fetchRepoData();
     }
   }
-
-  async function startIssueChecker () {
-    console.log("calling check for new issues")
-    await checkForNewIssues();
-    setTimeout(startIssueChecker,5000)
-}
-startIssueChecker();
 
   const handleLogout = () => {
     signOut({ callbackUrl: "/" });
@@ -107,7 +98,7 @@ startIssueChecker();
     <div className="flex min-h-screen bg-background relative">
       {/* Overlay for mobile */}
       {sidebarOpen && isMobile && (
-        <div 
+        <div
           className="fixed inset-0 bg-black/50 z-20"
           onClick={() => setSidebarOpen(false)}
         />
@@ -158,7 +149,10 @@ startIssueChecker();
         <div className="p-4 border-t">
           <div className="flex items-center">
             <Avatar className="h-8 w-8">
-              <AvatarImage src="/placeholder.svg?height=32&width=32" alt="User" />
+              <AvatarImage
+                src="/placeholder.svg?height=32&width=32"
+                alt="User"
+              />
               <AvatarFallback>U</AvatarFallback>
             </Avatar>
             <div className="ml-3">
@@ -200,7 +194,10 @@ startIssueChecker();
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="icon" className="rounded-full">
                     <Avatar>
-                      <AvatarImage src="/placeholder.svg?height=32&width=32" alt="User" />
+                      <AvatarImage
+                        src="/placeholder.svg?height=32&width=32"
+                        alt="User"
+                      />
                       <AvatarFallback>{session?.user.username}</AvatarFallback>
                     </Avatar>
                   </Button>
