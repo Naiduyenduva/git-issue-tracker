@@ -9,22 +9,12 @@ import {
   Github,
   Home,
   LayoutDashboard,
-  LogOut,
   Menu,
   Plus,
   Search,
-  Settings,
-  User,
   X,
 } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+
 import {
   Dialog,
   DialogContent,
@@ -40,7 +30,7 @@ import Repositories from "./Repositories";
 import { RepositoryState } from "../client/types";
 import { useSession } from "next-auth/react";
 import { fetchRepositoriesWithIssues } from "../api/issues";
-import { signOut } from "next-auth/react";
+import Profile from "./Profile";
 
 export default function Dashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -77,10 +67,6 @@ export default function Dashboard() {
       fetchRepoData();
     }
   }
-
-  const handleLogout = () => {
-    signOut({ callbackUrl: "/" });
-  };
 
   const fetchRepoData = useCallback(async () => {
     if (!userId) return;
@@ -190,36 +176,7 @@ export default function Dashboard() {
                   className="w-[200px] md:w-64 pl-8"
                 />
               </div>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="rounded-full">
-                    <Avatar>
-                      <AvatarImage
-                        src="/placeholder.svg?height=32&width=32"
-                        alt="User"
-                      />
-                      <AvatarFallback>{session?.user.username}</AvatarFallback>
-                    </Avatar>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
-                  <DropdownMenuLabel>My Account</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem>
-                    <User className="mr-2 h-4 w-4" />
-                    Profile
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <Settings className="mr-2 h-4 w-4" />
-                    Settings
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={handleLogout}>
-                    <LogOut className="mr-2 h-4 w-4" />
-                    Log out
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <Profile />
             </div>
           </div>
         </header>
@@ -269,7 +226,9 @@ export default function Dashboard() {
                       >
                         Add Repository
                       </Button>
-                      {message && <p className="text-center text-red-700">{message}</p>}
+                      {message && (
+                        <p className="text-center text-red-700">{message}</p>
+                      )}
                     </div>
                   </form>
                 </div>
