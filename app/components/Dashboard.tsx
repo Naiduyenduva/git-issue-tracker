@@ -31,6 +31,7 @@ import { RepositoryState } from "../client/types";
 import { useSession } from "next-auth/react";
 import { fetchRepositoriesWithIssues } from "../api/issues";
 import Profile from "./Profile";
+import { toast } from "sonner";
 
 export default function Dashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -60,8 +61,10 @@ export default function Dashboard() {
     if (response.error) {
       setMessage(response.error);
       console.log(message);
+      toast(response.error)
     } else {
       setMessage(response.success as string);
+      toast("repo added successfully")
       setIsAddingRepo(false);
       setRepoUrl("");
       fetchRepoData();
@@ -226,9 +229,6 @@ export default function Dashboard() {
                       >
                         Add Repository
                       </Button>
-                      {message && (
-                        <p className="text-center text-red-700">{message}</p>
-                      )}
                     </div>
                   </form>
                 </div>

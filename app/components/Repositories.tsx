@@ -8,14 +8,28 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Github } from "lucide-react";
+import { Github, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { AlertCircle } from "lucide-react";
 import { RepositoryState, Repository } from "../client/types";
+import { deleteRepo } from "../api/repository";
+import { toast } from "sonner";
 
 const Repositories: React.FC<{
   repositories: Repository[] | RepositoryState;
 }> = ({ repositories }) => {
+
+  async function handleDelete (userid:string,repoid:string) {
+    const userId = userid
+    const repositoryId = repoid;
+    try {
+      await deleteRepo(userId,repositoryId)
+      toast("repository deleted please refresh")
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
   return (
     <div>
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mb-8">
@@ -27,9 +41,14 @@ const Repositories: React.FC<{
               className={`cursor-pointer hover:border-primary transition-colors`}
             >
               <CardHeader className="pb-2">
-                <CardTitle className="flex items-center">
-                  <Github className="mr-2 h-5 w-5" />
-                  {repo.name}
+                <CardTitle className="flex items-center justify-between">
+                  <div className="flex">
+                    <Github className="mr-2 h-5 w-5" />
+                    {repo.name}
+                  </div>
+                  <button className="cursor-pointer" onClick={() => handleDelete(repo.userId,repo.id)}>
+                    <Trash2 size={20} color="red" />
+                    </button>
                 </CardTitle>
                 <CardDescription>
                   {repo.owner}/{repo.name}

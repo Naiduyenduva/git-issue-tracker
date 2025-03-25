@@ -92,3 +92,12 @@ export async function addRepository(formData: FormData) {
 export async function getRepositories(userId: string) {
   return await prisma.repository.findMany({ where: { userId } });
 }
+
+export async function deleteRepo (userId:string, repositoryId: string) {
+  await prisma.repository.delete({
+    where: {
+      userId: userId,
+      id: repositoryId
+    }
+  })
+}
